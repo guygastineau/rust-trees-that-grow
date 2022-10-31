@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, collections::HashMap};
 
 pub trait Familyξ<Ξ> { type R; }
 type Runξ<T, Ξ> = <T as Familyξ<Ξ>>::R;
@@ -20,7 +20,7 @@ where
     Exp(Runξ<ExpS, Ξ>),
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Typ { I, V, Fun (Box<Typ>, Box<Typ>) }
 
 impl<Ξ> fmt::Debug for Expression<Ξ>
@@ -97,6 +97,29 @@ impl Familyξ<TC> for AppS { type R = Typ; }
 impl Familyξ<TC> for ExpS { type R = (); }
 
 pub type ExpTC = Expression<TC>;
+
+impl ExpTC {
+    pub fn check(&self, γ: &HashMap<String, Typ>, α: Typ) -> bool {
+        use Expression::*;
+        match self {
+            Lit(_, _) => true,
+            Var(_, x) => γ.get(x)
+                .map(|x| *x == α)
+                .unwrap_or(false),
+            Ann(_, x, β) => α == *β && x.check(γ, α),
+            Abs(_, x, m) => match α {
+                Typ::Fun(α, β) => {
+                    let mut γ = γ.clone();
+                    γ.insert(x.clone(), *α);
+                    m.check(&γ, *β)
+                },
+                _ => false
+            },
+            App(β, f, x) => x.check(γ, β.clone()) && f.check(γ, Typ::Fun(Box::new(β.clone()), Box::new(α))),
+            _ => false,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
