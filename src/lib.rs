@@ -25,7 +25,6 @@ where
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Typ {
     I,
-    V,
     Fun(Box<Typ>, Box<Typ>),
 }
 
@@ -149,9 +148,45 @@ impl ExpTC {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref Γ: HashMap<String, Typ> = [
+            ("x", Typ::I),
+            (
+                "f",
+                Typ::Fun(
+                    Box::new(Typ::I),
+                    Box::new(Typ::Fun(Box::new(Typ::I), Box::new(Typ::I)))
+                )
+            )
+        ]
+        .into_iter()
+        .fold(HashMap::new(), |mut γ, (id, α)| {
+            γ.insert(id.to_owned(), α);
+            γ
+        });
+    }
 
     #[test]
-    fn print_lit() {
-        println!("{:?}", Expression::Lit((), 5) as ExpTC)
+    fn check_lit() {
+        assert!(Expression::Lit((), 5).check(&Γ, Typ::I));
+    }
+
+    #[test]
+    fn check_var() {
+        assert!(Expression::Var((), "x".to_owned()).check(&Γ, Typ::I));
+        assert!(Expression::Var((), "f".to_owned()).check(
+            &Γ,
+            Typ::Fun(
+                Box::new(Typ::I),
+                Box::new(Typ::Fun(Box::new(Typ::I), Box::new(Typ::I)))
+            )
+        ));
+    }
+
+    #[test]
+    fn check_ann() {
+        assert!(Expression::Ann((), Box::new(Expression::Lit((), 10)), Typ::I).check(&Γ, Typ::I));
     }
 }
