@@ -183,10 +183,52 @@ mod tests {
                 Box::new(Typ::Fun(Box::new(Typ::I), Box::new(Typ::I)))
             )
         ));
+        assert!(!Expression::Var((), "y".to_owned()).check(&Γ, Typ::I));
     }
 
     #[test]
     fn check_ann() {
-        assert!(Expression::Ann((), Box::new(Expression::Lit((), 10)), Typ::I).check(&Γ, Typ::I));
+        let ann = Expression::Ann((), Box::new(Expression::Lit((), 10)), Typ::I);
+        assert!(ann.check(&Γ, Typ::I));
+        assert!(!ann.check(&Γ, Typ::Fun(Box::new(Typ::I), Box::new(Typ::I))));
+    }
+
+    #[test]
+    fn check_abs() {
+        // Identity
+        let abs: ExpTC = Expression::Abs(
+            (),
+            "x".to_owned(),
+            Box::new(Expression::Var((), "x".to_owned())),
+        );
+        let g = Typ::Fun(Box::new(Typ::I), Box::new(Typ::I));
+        let α = Typ::Fun(Box::new(g.clone()), Box::new(g.clone()));
+        assert!(abs.check(&Γ, α));
+        assert!(!abs.check(&Γ, Typ::Fun(Box::new(g.clone()), Box::new(Typ::I))));
+        // Application of abstracted variable on free variable
+        let bbs: ExpTC = Expression::Abs(
+            (),
+            "y".to_owned(),
+            Box::new(Expression::App(
+                Typ::I,
+                Box::new(Expression::Var((), "y".to_owned())),
+                Box::new(Expression::Var((), "x".to_owned())),
+            )),
+        );
+        assert!(bbs.check(&Γ, Typ::Fun(Box::new(g), Box::new(Typ::I))));
+    }
+
+    #[test]
+    fn check_app() {
+        let g = Typ::Fun(Box::new(Typ::I), Box::new(Typ::I));
+        let app = |α| {
+            Expression::App(
+                α,
+                Box::new(Expression::Var((), "f".to_owned())),
+                Box::new(Expression::Var((), "x".to_owned())),
+            )
+        };
+        assert!(app(Typ::I).check(&Γ, g.clone()));
+        assert!(!app(g.clone()).check(&Γ, g))
     }
 }
