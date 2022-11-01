@@ -1,0 +1,35 @@
+* Trees that Grow in Rust
+
+Recently, I cam back to my fascination with typed lambda calculi.
+It is a subject of great fascination and difficulty for me.  To my delight,
+I got things much better this time around, and this lead me to revisit the
+paper [[https://www.microsoft.com/en-us/research/uploads/prod/2016/11/trees-that-grow.pdf][Trees that Grow]].  I got the idea the first time I read it, but the type
+shenanighans were still overwhelming.  This weekend I implemented a variation
+on the examples in /Haskell/ including more primitive types and starting with GADTs
+from the beginning.  I was much more ready this time.
+
+While I do get to use /Haskell/ at work, I also have recent reason to revisit
+/rust/ for a NLP project involving random forests (my way of avoiding python).
+So, at the end of my Monday I wondered, "can we do this same degree of type level
+programming in rust?"  The answer seemed to be yes, and after seeing some examples
+of what appeared to be type families implemented via traits and aliases I figured
+I would try it out.  I encountered some confusion, but within a few hours I had a
+minimal example of the interesting bits from the above mentioned paper.
+
+While I don't intend for this project to develop into a production codebase it
+was nevertheless fun to implement, and it gives me hope that I can bring some
+of my favorite things about /Haskell/'s type system to my /rust/ projects.  This
+is especially important to me, as I would like to play with PLT in /rust/.
+
+Anyway, I searched for /Trees that Grow/ in /rust/, but my search came up empty
+(okay, I was using DuckDuckGo ;)). So, I figured I should put this POC out in the
+world in case anyone else is interested in seeing what it can look like.
+
+** Addendum
+
+I should certainly use smart constructors and whatnot in the absence of pattern
+synonyms, but I didn't do it yet (will I ever do it?).  I also probably should
+not have used greek letters, but /input-mode Tex/ is just too much fun.  The paper
+also uses greek alphabet, because it is very math informed.  Using the uppercase
+Ξ since ξ is not a valid type variable in /rust/ felt a bit weird, but I stick with
+it.  Please don't hate me for it, haha.
