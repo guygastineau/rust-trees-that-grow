@@ -1,6 +1,6 @@
 * Trees that Grow in Rust
 
-Recently, I cam back to my fascination with typed lambda calculi.
+Recently, I came back to my fascination with typed lambda calculi.
 It is a subject of great fascination and difficulty for me.  To my delight,
 I got things much better this time around, and this lead me to revisit the
 paper [[https://www.microsoft.com/en-us/research/uploads/prod/2016/11/trees-that-grow.pdf][Trees that Grow]].  I got the idea the first time I read it, but the type
@@ -9,7 +9,7 @@ on the examples in /Haskell/ including more primitive types and starting with GA
 from the beginning.  I was much more ready this time.
 
 While I do get to use /Haskell/ at work, I also have recent reason to revisit
-/rust/ for a NLP project involving random forests (my way of avoiding python).
+/rust/ for an NLP project involving random forests (my way of avoiding python).
 So, at the end of my Monday I wondered, "can we do this same degree of type level
 programming in rust?"  The answer seemed to be yes, and after seeing some examples
 of what appeared to be type families implemented via traits and aliases I figured
@@ -19,17 +19,53 @@ minimal example of the interesting bits from the above mentioned paper.
 While I don't intend for this project to develop into a production codebase it
 was nevertheless fun to implement, and it gives me hope that I can bring some
 of my favorite things about /Haskell/'s type system to my /rust/ projects.  This
-is especially important to me, as I would like to play with PLT in /rust/.
+is especially important to me, as I would like to play with PLT in /rust/, but I am
+spoiled by the abstraction features offered by /Haskell/.
 
 Anyway, I searched for /Trees that Grow/ in /rust/, but my search came up empty
-(okay, I was using DuckDuckGo ;)). So, I figured I should put this POC out in the
+(okay, I was using DuckDuckGo ;)). So, I figured I should put this PoC out in the
 world in case anyone else is interested in seeing what it can look like.
+
+** What's missing?
+
+Well, everything is.  /Trees that Grow/ implements more than this PoC, but it
+doesn't implement very much either.  The example code therein is meant to show
+the techniques it explores clearly, but obviously the work of converting GHC's
+codebase to use the techniques is wildly more complicated and tedious.  I am
+most sad that I didn't find a good way to approximate the following /Haskell/ idiom
+in /rust/:
+
+#+BEGIN_SRC haskell
+  -- | Ensure that ϕ holds for all type families on ξ.
+  -- Technically, we should be able to make this more generic by taking a list
+  -- of `* -> *` kinds to compose with ϕ, but then we would still need to
+  -- define a specific type alias for `ForallExp` anyway.
+  type ForallExp (ϕ :: * -> Constraint) ξ
+    = ( ϕ (ELit ξ), ϕ (EVar ξ), ϕ (EAnn ξ)
+      , ϕ (EAbs ξ), ϕ (EApp ξ), ϕ (EExp ξ)
+      )
+#+END_SRC
+
+Of course, I only spent a little time thinking about how to do this in /rust/.
+And I will probably think more about it as the week goes by.  I doubt I can make
+it as terse, but that is fine.  I just want to make call sites and /impl/ heads
+less tiresome. Y'know, since the following is much better than a thousand constraints
+in every where clause.
+
+#+BEGIN_SRC haskell
+instance ForallExp Show ξ => Show (Exp ξ α) where
+  show (Lit ξ x)   = "(Lit " <> show ξ <> " " <> show x <> ")"
+  ...
+#+END_SRC
+
+If you are inspired by this example code and want to extend my PoC to address these or
+other issues, please let me know about it.  I would enjoy learning from your contributions!
 
 ** Addendum
 
 I should certainly use smart constructors and whatnot in the absence of pattern
 synonyms, but I didn't do it yet (will I ever do it?).  I also probably should
-not have used greek letters, but /input-mode Tex/ is just too much fun.  The paper
-also uses greek alphabet, because it is very math informed.  Using the uppercase
-Ξ since ξ is not a valid type variable in /rust/ felt a bit weird, but I stick with
-it.  Please don't hate me for it, haha.
+not have used greek letters, but /input-mode TeX/ is just too much fun.  The paper
+also uses the greek alphabet, because it is very math informed.  Using the uppercase
+Ξ since ξ is not a valid type variable in /rust/ felt a bit weird, but I stuck with
+it.  Please don't hate me for that, haha.
